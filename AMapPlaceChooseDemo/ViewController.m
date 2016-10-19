@@ -11,6 +11,9 @@
 #import <MAMapKit/MAMapView.h>
 #import <AMapSearchKit/AMapSearchKit.h>
 #import "PlaceAroundTableView.h"
+#import <AMapFoundationKit/AMapFoundationKit.h>
+
+#define kAPIKey @"ecf3d01306bb8e88cb84e3d435428f7c"
 
 @interface ViewController ()<MAMapViewDelegate,PlaceAroundTableViewDeleagate>
 
@@ -174,7 +177,6 @@
 
 - (void)initMapView
 {
-    [MAMapServices sharedServices].apiKey = @"0df9481ee05f4750fb78cae5e95b0724";
     self.mapView = [[MAMapView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), self.view.bounds.size.height/2)];
     self.mapView.delegate = self;
     self.mapView.showsCompass = NO;
@@ -190,8 +192,6 @@
 - (void)initSearch
 {
     self.searchPage = 1;
-    
-    [AMapSearchServices sharedServices].apiKey = @"0df9481ee05f4750fb78cae5e95b0724";
     self.search = [[AMapSearchAPI alloc] init];
     self.search.delegate = self.tableview;
 }
@@ -258,6 +258,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    [AMapServices sharedServices].apiKey = kAPIKey;
     
     [self initTableview];
     
