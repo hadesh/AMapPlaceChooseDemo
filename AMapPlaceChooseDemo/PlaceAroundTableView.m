@@ -190,11 +190,11 @@
 
 - (void)initTableViewFooter
 {
-    UIView *footer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.bounds), 44)];
+    UIView *footer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.bounds), 60)];
     
     UIButton *moreBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    moreBtn.frame = CGRectMake(0, 0, CGRectGetWidth(self.bounds), 44);
-    [moreBtn setTitle:@"更多.." forState:UIControlStateNormal];
+    moreBtn.frame = footer.bounds;
+    [moreBtn setTitle:@"更多..." forState:UIControlStateNormal];
     [moreBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [moreBtn setTitleColor:[[UIColor grayColor] colorWithAlphaComponent:0.4] forState:UIControlStateHighlighted];
     moreBtn.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;

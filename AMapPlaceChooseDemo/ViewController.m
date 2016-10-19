@@ -15,7 +15,7 @@
 
 #define kAPIKey @"ecf3d01306bb8e88cb84e3d435428f7c"
 
-@interface ViewController ()<MAMapViewDelegate,PlaceAroundTableViewDeleagate>
+@interface ViewController ()<MAMapViewDelegate, PlaceAroundTableViewDeleagate, UIPickerViewDelegate, UIPickerViewDataSource>
 
 @property (nonatomic, strong) MAMapView            *mapView;
 @property (nonatomic, strong) AMapSearchAPI        *search;
@@ -32,6 +32,11 @@
 
 @property (nonatomic, assign) NSInteger             searchPage;
 
+@property (nonatomic, strong) UIPickerView         *searchTypePicker;
+@property (nonatomic, strong) UIButton             *pickerButton;
+@property (nonatomic, copy) NSString               *currentType;
+@property (nonatomic, copy) NSArray                *searchTypes;
+
 @end
 
 @implementation ViewController
@@ -46,8 +51,8 @@
     request.location = [AMapGeoPoint locationWithLatitude:coord.latitude  longitude:coord.longitude];
 
     request.radius   = 1000;
-
-    request.sortrule = 1;
+    request.types = self.currentType;
+    request.sortrule = 0;
     request.page     = self.searchPage;
     
     [self.search AMapPOIAroundSearch:request];
@@ -173,6 +178,12 @@
     }
 }
 
+- (void)actionTypePicker
+{
+    self.searchTypePicker.hidden = !self.searchTypePicker.hidden;
+    
+}
+
 #pragma mark - Initialization
 
 - (void)initMapView
@@ -221,14 +232,43 @@
     self.imageLocated = [UIImage imageNamed:@"gpssearchbutton"];
     self.imageNotLocate = [UIImage imageNamed:@"gpsnormal"];
     
-    self.locationBtn = [[UIButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(self.mapView.bounds)*0.8, CGRectGetHeight(self.mapView.bounds)*0.8, 40, 40)];
+    self.locationBtn = [[UIButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(self.mapView.bounds) - 50, CGRectGetHeight(self.mapView.bounds) - 60, 40, 40)];
     self.locationBtn.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
-    self.locationBtn.backgroundColor = [UIColor colorWithRed:239.0/255 green:239.0/255 blue:239.0/255 alpha:1];
+    self.locationBtn.backgroundColor = [UIColor whiteColor];
+    
     self.locationBtn.layer.cornerRadius = 3;
     [self.locationBtn addTarget:self action:@selector(actionLocation) forControlEvents:UIControlEventTouchUpInside];
     [self.locationBtn setImage:self.imageNotLocate forState:UIControlStateNormal];
     
     [self.view addSubview:self.locationBtn];
+}
+
+- (void)initPickerView
+{
+    self.searchTypes = @[@"住宅", @"学校", @"楼宇", @"商场"];
+    
+    self.currentType = self.searchTypes.firstObject;
+    
+    self.pickerButton = [[UIButton alloc] initWithFrame:CGRectMake(10, CGRectGetHeight(self.mapView.bounds) - 60, 100, 40)];
+    self.pickerButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
+    self.pickerButton.backgroundColor = [UIColor whiteColor];
+    
+    self.pickerButton.layer.cornerRadius = 3;
+    [self.pickerButton addTarget:self action:@selector(actionTypePicker) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self.pickerButton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    [self.pickerButton setTitle:self.currentType forState:UIControlStateNormal];
+    
+    [self.view addSubview:self.pickerButton];
+    
+    
+    self.searchTypePicker = [[UIPickerView alloc] initWithFrame:CGRectMake(self.pickerButton.frame.origin.x, CGRectGetMaxY(self.pickerButton.frame), 100, 100)];
+    self.searchTypePicker.backgroundColor = [UIColor lightGrayColor];
+    self.searchTypePicker.delegate = self;
+    self.searchTypePicker.dataSource = self;
+    self.searchTypePicker.hidden = YES;
+    [self.view addSubview:self.searchTypePicker];
+    
 }
 
 /* 移动窗口弹一下的动画 */
@@ -267,8 +307,51 @@
     [self initMapView];
     
     [self initRedWaterView];
-    
     [self initLocationButton];
+    
+    [self initPickerView];
+}
+
+#pragma mark - UIPickerViewDataSource
+
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView
+{
+    return 1;
+}
+
+- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component
+{
+    return self.searchTypes.count;
+}
+
+#pragma mark - UIPickerViewDelegate
+
+- (CGFloat)pickerView:(UIPickerView *)pickerView rowHeightForComponent:(NSInteger)component
+{
+    return 40;
+}
+
+- (UIView *)pickerView:(UIPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView *)view
+{
+    UILabel *myView = [[UILabel alloc] init];
+    myView.font = [UIFont systemFontOfSize:20];
+    myView.backgroundColor = [UIColor clearColor];
+    myView.textAlignment = NSTextAlignmentCenter;
+    myView.text = self.searchTypes[row];
+    [myView sizeToFit];
+    
+    return myView;
+}
+
+- (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component
+{
+    self.currentType = self.searchTypes[row];
+    [self.pickerButton setTitle:self.currentType forState:UIControlStateNormal];
+    
+    [self searchReGeocodeWithCoordinate:self.mapView.centerCoordinate];
+    [self searchPoiByCenterCoordinate:self.mapView.centerCoordinate];
+    self.searchPage = 1;
+    [self redWaterAnimimate];
 }
 
 @end
