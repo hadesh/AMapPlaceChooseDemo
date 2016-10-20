@@ -192,6 +192,7 @@
     self.mapView.delegate = self;
     self.mapView.showsCompass = NO;
     self.mapView.showsScale = NO;
+    self.mapView.showsIndoorMap = NO;
     self.mapView.rotateCameraEnabled = NO;
     self.mapView.zoomLevel = 17;
     self.mapView.showsUserLocation = YES;
