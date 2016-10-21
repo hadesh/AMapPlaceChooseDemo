@@ -32,8 +32,7 @@
 
 @property (nonatomic, assign) NSInteger             searchPage;
 
-@property (nonatomic, strong) UIPickerView         *searchTypePicker;
-@property (nonatomic, strong) UIButton             *pickerButton;
+@property (nonatomic, strong) UISegmentedControl    *searchTypeSegment;
 @property (nonatomic, copy) NSString               *currentType;
 @property (nonatomic, copy) NSArray                *searchTypes;
 
@@ -178,10 +177,13 @@
     }
 }
 
-- (void)actionTypePicker
+- (void)actionTypeChanged:(UISegmentedControl *)sender
 {
-    self.searchTypePicker.hidden = !self.searchTypePicker.hidden;
-    
+    self.currentType = self.searchTypes[sender.selectedSegmentIndex];
+    [self searchReGeocodeWithCoordinate:self.mapView.centerCoordinate];
+    [self searchPoiByCenterCoordinate:self.mapView.centerCoordinate];
+    self.searchPage = 1;
+    [self redWaterAnimimate];
 }
 
 #pragma mark - Initialization
@@ -244,31 +246,18 @@
     [self.view addSubview:self.locationBtn];
 }
 
-- (void)initPickerView
+- (void)initSearchTypeView
 {
     self.searchTypes = @[@"住宅", @"学校", @"楼宇", @"商场"];
     
     self.currentType = self.searchTypes.firstObject;
     
-    self.pickerButton = [[UIButton alloc] initWithFrame:CGRectMake(10, CGRectGetHeight(self.mapView.bounds) - 60, 100, 40)];
-    self.pickerButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
-    self.pickerButton.backgroundColor = [UIColor whiteColor];
-    
-    self.pickerButton.layer.cornerRadius = 3;
-    [self.pickerButton addTarget:self action:@selector(actionTypePicker) forControlEvents:UIControlEventTouchUpInside];
-    
-    [self.pickerButton setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
-    [self.pickerButton setTitle:self.currentType forState:UIControlStateNormal];
-    
-    [self.view addSubview:self.pickerButton];
-    
-    
-    self.searchTypePicker = [[UIPickerView alloc] initWithFrame:CGRectMake(self.pickerButton.frame.origin.x, CGRectGetMaxY(self.pickerButton.frame), 100, 100)];
-    self.searchTypePicker.backgroundColor = [UIColor lightGrayColor];
-    self.searchTypePicker.delegate = self;
-    self.searchTypePicker.dataSource = self;
-    self.searchTypePicker.hidden = YES;
-    [self.view addSubview:self.searchTypePicker];
+    self.searchTypeSegment = [[UISegmentedControl alloc] initWithItems:self.searchTypes];
+    self.searchTypeSegment.frame = CGRectMake(10, CGRectGetHeight(self.mapView.bounds) - 60, CGRectGetWidth(self.mapView.bounds) - 80, 32);
+    self.searchTypeSegment.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
+    self.searchTypeSegment.selectedSegmentIndex = 0;
+    [self.searchTypeSegment addTarget:self action:@selector(actionTypeChanged:) forControlEvents:UIControlEventValueChanged];
+    [self.view addSubview:self.searchTypeSegment];
     
 }
 
@@ -310,7 +299,7 @@
     [self initRedWaterView];
     [self initLocationButton];
     
-    [self initPickerView];
+    [self initSearchTypeView];
 }
 
 #pragma mark - UIPickerViewDataSource
@@ -323,36 +312,6 @@
 - (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component
 {
     return self.searchTypes.count;
-}
-
-#pragma mark - UIPickerViewDelegate
-
-- (CGFloat)pickerView:(UIPickerView *)pickerView rowHeightForComponent:(NSInteger)component
-{
-    return 40;
-}
-
-- (UIView *)pickerView:(UIPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView *)view
-{
-    UILabel *myView = [[UILabel alloc] init];
-    myView.font = [UIFont systemFontOfSize:20];
-    myView.backgroundColor = [UIColor clearColor];
-    myView.textAlignment = NSTextAlignmentCenter;
-    myView.text = self.searchTypes[row];
-    [myView sizeToFit];
-    
-    return myView;
-}
-
-- (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component
-{
-    self.currentType = self.searchTypes[row];
-    [self.pickerButton setTitle:self.currentType forState:UIControlStateNormal];
-    
-    [self searchReGeocodeWithCoordinate:self.mapView.centerCoordinate];
-    [self searchPoiByCenterCoordinate:self.mapView.centerCoordinate];
-    self.searchPage = 1;
-    [self redWaterAnimimate];
 }
 
 @end
