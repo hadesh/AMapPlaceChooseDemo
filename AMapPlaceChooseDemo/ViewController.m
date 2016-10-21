@@ -15,7 +15,7 @@
 
 #define kAPIKey @"ecf3d01306bb8e88cb84e3d435428f7c"
 
-@interface ViewController ()<MAMapViewDelegate, PlaceAroundTableViewDeleagate, UIPickerViewDelegate, UIPickerViewDataSource>
+@interface ViewController ()<MAMapViewDelegate, PlaceAroundTableViewDeleagate>
 
 @property (nonatomic, strong) MAMapView            *mapView;
 @property (nonatomic, strong) AMapSearchAPI        *search;
@@ -73,11 +73,7 @@
 {
     if (!self.isMapViewRegionChangedFromTableView && self.mapView.userTrackingMode == MAUserTrackingModeNone)
     {
-        [self searchReGeocodeWithCoordinate:self.mapView.centerCoordinate];
-        [self searchPoiByCenterCoordinate:self.mapView.centerCoordinate];
-        
-        self.searchPage = 1;
-        [self redWaterAnimimate];
+        [self actionSearchAround];
     }
     self.isMapViewRegionChangedFromTableView = NO;
 }
@@ -136,6 +132,10 @@
         self.isLocated = YES;
         
         [self.mapView setCenterCoordinate:CLLocationCoordinate2DMake(userLocation.location.coordinate.latitude, userLocation.location.coordinate.longitude)];
+        
+        [self actionSearchAround];
+        
+        self.mapView.userTrackingMode = MAUserTrackingModeFollow;
     }
 }
 
@@ -157,6 +157,15 @@
 }
 
 #pragma mark - Handle Action
+
+- (void)actionSearchAround
+{
+    [self searchReGeocodeWithCoordinate:self.mapView.centerCoordinate];
+    [self searchPoiByCenterCoordinate:self.mapView.centerCoordinate];
+    
+    self.searchPage = 1;
+    [self redWaterAnimimate];
+}
 
 - (void)actionLocation
 {
@@ -180,10 +189,7 @@
 - (void)actionTypeChanged:(UISegmentedControl *)sender
 {
     self.currentType = self.searchTypes[sender.selectedSegmentIndex];
-    [self searchReGeocodeWithCoordinate:self.mapView.centerCoordinate];
-    [self searchPoiByCenterCoordinate:self.mapView.centerCoordinate];
-    self.searchPage = 1;
-    [self redWaterAnimimate];
+    [self actionSearchAround];
 }
 
 #pragma mark - Initialization
@@ -235,7 +241,7 @@
     self.imageLocated = [UIImage imageNamed:@"gpssearchbutton"];
     self.imageNotLocate = [UIImage imageNamed:@"gpsnormal"];
     
-    self.locationBtn = [[UIButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(self.mapView.bounds) - 50, CGRectGetHeight(self.mapView.bounds) - 60, 40, 40)];
+    self.locationBtn = [[UIButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(self.mapView.bounds) - 40, CGRectGetHeight(self.mapView.bounds) - 50, 32, 32)];
     self.locationBtn.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
     self.locationBtn.backgroundColor = [UIColor whiteColor];
     
@@ -253,7 +259,9 @@
     self.currentType = self.searchTypes.firstObject;
     
     self.searchTypeSegment = [[UISegmentedControl alloc] initWithItems:self.searchTypes];
-    self.searchTypeSegment.frame = CGRectMake(10, CGRectGetHeight(self.mapView.bounds) - 60, CGRectGetWidth(self.mapView.bounds) - 80, 32);
+    self.searchTypeSegment.frame = CGRectMake(10, CGRectGetHeight(self.mapView.bounds) - 50, CGRectGetWidth(self.mapView.bounds) - 80, 32);
+    self.searchTypeSegment.layer.cornerRadius = 3;
+    self.searchTypeSegment.backgroundColor = [UIColor whiteColor];
     self.searchTypeSegment.autoresizingMask = UIViewAutoresizingFlexibleTopMargin;
     self.searchTypeSegment.selectedSegmentIndex = 0;
     [self.searchTypeSegment addTarget:self action:@selector(actionTypeChanged:) forControlEvents:UIControlEventValueChanged];
@@ -300,18 +308,6 @@
     [self initLocationButton];
     
     [self initSearchTypeView];
-}
-
-#pragma mark - UIPickerViewDataSource
-
-- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView
-{
-    return 1;
-}
-
-- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component
-{
-    return self.searchTypes.count;
 }
 
 @end

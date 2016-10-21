@@ -55,6 +55,7 @@
         self.moreButton.enabled = NO;
         self.moreButton.backgroundColor = [[UIColor grayColor] colorWithAlphaComponent:0.4];
         
+        self.selectedIndexPath = nil;
         [self.tableView reloadData];
         return;
     }
@@ -63,6 +64,7 @@
         [self.searchPoiArray addObject:obj];
     }];
     
+    self.selectedIndexPath = nil;
     [self.tableView reloadData];
 }
 
